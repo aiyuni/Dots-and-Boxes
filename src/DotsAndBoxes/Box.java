@@ -112,6 +112,10 @@ public class Box {
                 line1.getEndX() ==line2.getEndX() && line2.getEndY() == line2.getEndY()) {
             return true;
         }
+        if (line1.getStartX() == line2.getEndX() && line1.getStartY() == line2.getEndY() &&
+                line1.getEndX() ==line2.getStartX() && line2.getEndY() == line2.getStartY()) {
+            return true;
+        }
         return false;
     }
     

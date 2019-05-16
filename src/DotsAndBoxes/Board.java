@@ -164,6 +164,9 @@ public class Board {
         }
     }
     
+    /**
+     * Modified event handling for player vs AI
+     */
     private void setCircleEventHandlingAgainstAI() {
         for (int i = 0; i < circles.size(); i++) {
             circles.get(i).setOnMouseClicked((MouseEvent event) -> {  
@@ -190,15 +193,29 @@ public class Board {
                         }
                     }
                     else {  
-                        playerOneTurn = !playerOneTurn;  //change turns
                         status.setPlayerTurn(playerOneTurn);
                     }                  
                     makeComputerMove();
+                    for (int k = 0; k < boxes.size(); k++) {
+                        boxes.get(k).findAndSetLineColor(line, !playerOneTurn);
+                    } 
+
+                    //make the computer keep making a move if it completes a box
+                    while (checkForFilledBoxes()) {
+                        status.setPlayerTurn(!playerOneTurn); //stay the same turn
+                        if (checkForWin()) {
+                            //can add additional logic to remove all event handling                     
+                            return;
+                        }
+                        makeComputerMove();
+                        for (int k = 0; k < boxes.size(); k++) {
+                            boxes.get(k).findAndSetLineColor(line, !playerOneTurn);
+                        } 
+                    }            
                     hasClicked = false;
                     
                 }
                 else {
-                    //System.out.println("pressed on circle 1ST TIME");
                     startCircle = (Circle)event.getSource();
                     hasClicked = true;
                 }
@@ -309,7 +326,15 @@ public class Board {
     }
     
     public void addLines(ArrayList<Line> lines) {
-        this.lines.addAll(lines);
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).isVisible()) {
+                System.out.println("is visible");
+            }
+            else {
+                this.lines.add(lines.get(i));
+            }
+        }
+        //this.lines.addAll(lines);
     }
     
     public Pane getPane() {
@@ -347,22 +372,26 @@ public class Board {
                     return 0;
                 }
                 if (line2.isVisible()) {
-                    System.out.println("line 2 is visible");
                     return 0;
                 }
                 return -1;
             } 
         });
+        
+        //there's a bug somewhere in this for loop that adds duplicate lines...
         for (Line line : lines) {
             for (int i = 0; i < boxes.size(); i++) {
-                if (!boxes.get(i).checkIfLineMatchAndFilled(line)) {
+                if (!boxes.get(i).checkIfLineMatchAndFilled(line)) {  
                     if (!line.isVisible()) {
                         legalMoves.add(line);
                     }
                 }
+                else {
+                    System.out.println("false");
+                }
             }
         }
-        System.out.println("legalmoves size is: " + legalMoves.size());
+        System.out.println("legalmoves size is: " + legalMoves.size());  //legalMove size is wrong
         for (int i = 0; i < legalMoves.size(); i++) {
             
         }
@@ -373,13 +402,12 @@ public class Board {
         for (Line move : legalMoves) {
             randomMove--;
             if (randomMove == 0) {
-                if (move.isVisible()) {
-                    legalMoves.pollFirst().setVisible(true);
-                    move.setStroke(Color.GOLD);
+                if (move.isVisible()) { //this if statement should never happen
+                    System.out.println("this should never been printed");
                 }
                 else {
                     move.setVisible(true);
-                    move.setStroke(Color.PINK);
+                    move.setStroke(Color.DARKGREEN);
                 }
             }
         }
